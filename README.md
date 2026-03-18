@@ -1,76 +1,110 @@
-# VIDYASETU
+# 🎓 VIDYASETU – AI Powered Learning Platform
 
-An AI-powered, offline-first learning workspace that combines personalized education, gamification, and real-time quiz competition.
+VIDYASETU is an AI-powered learning platform designed to improve **quality education for students**, especially those in government schools.  
+The platform provides personalized learning, AI tutoring, competitive quiz battles, and smart study tools.
 
-this is the deployed link - https://vidyasetu-sigma.vercel.app
+🌍 Built for **SDG 4 – Quality Education**
 
-## Features
+---
 
-- **Quiz Arena**: Real-time 1v1 battles with matchmaking and AI fallback.
-- **AI Workspace**: Personalized learning roadmap and coding compiler.
-- **Study Timer**: Persistent timer that tracks your focus across the platform.
-- **Teacher Dashboard**: Detailed analytics on student performance and weak topics.
-- **Multi-language Support**: English, Hindi, Spanish, and French.
+## 🚀 Live Demo
 
-## Tech Stack
+🔗 **Deployed Link:**  
+https://vidyasetu-sigma.vercel.app
 
-- **Frontend**: React 19, Tailwind CSS 4, Lucide React, Framer Motion, Recharts.
-- **Backend**: Node.js, Express, Socket.IO.
-- **Database**: Firebase (Firestore, Auth).
-- **AI**: Google Gemini API.
+---
 
-## Getting Started
+## ✨ Features
+
+### 📊 Dashboard
+- Track learning progress
+- Earn coins and level up
+
+### 🧠 AI Tutor
+- Ask doubts using AI
+- Supports multiple subjects
+
+### ⚔️ Quiz Arena (Battle Mode)
+- Select class and subject
+- 1 vs 1 or multiplayer quiz battle
+- Earn coins based on performance
+
+### 📝 Smart Notes
+- Take notes while learning
+- Save important concepts
+
+### 🎥 Learning Reels
+- Short concept explanations
+- Quick learning format
+
+---
+
+## 🛠 Tech Stack
+
+**Frontend**
+- HTML
+- CSS
+- JavaScript / TypeScript
+- Vite
+
+**Authentication**
+- Firebase Authentication
+
+**AI Integration**
+- Google Gemini API
+
+**Microsoft Service**
+- Azure AI Speech Service (Voice-based interaction)
+
+**Deployment**
+- Vercel
+
+**Version Control**
+- Git & GitHub
+
+---
+
+## 🎯 Problem We Solve
+
+Government school students face:
+- Limited personalized guidance
+- Lack of interactive learning tools
+- Low motivation for practice
+
+VIDYASETU solves this by providing:
+- AI-powered tutoring
+- Gamified learning
+- Competitive quiz battles
+- Personalized learning support
+
+---
+
+## 👨‍💻 Team
+
+Developed as part of a **Hackathon Project**.
+
+---
+
+## 📌 Future Improvements
+
+- Real-time multiplayer quiz battles
+- Offline learning support
+- Teacher analytics dashboard
+- AI-based performance insights
+
+---
+
+## ⭐ SDG Alignment
+
+This project contributes to:
+
+**SDG 4 – Quality Education**
+
+By making learning:
+- Accessible
+- Interactive
+- Personalized
 
 
 
-### Prerequisites
 
-- Node.js (v18+)
-- npm
-
-### Installation
-
-1. Clone the repository.
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Set up your environment variables in `.env` (see `.env.example`).
-
-### Development
-
-Run the development server:
-```bash
-npm run dev
-```
-The app will be available at `http://localhost:3000`.
-
-### Build & Deploy
-
-#### Standard Build
-```bash
-npm run build
-```
-
-#### Deployment (Docker)
-A `Dockerfile` is provided for easy deployment to platforms like Google Cloud Run.
-
-1. Build the image:
-   ```bash
-   docker build -t vidyasetu .
-   ```
-2. Run the container:
-   ```bash
-   docker run -p 3000:3000 vidyasetu
-   ```
-
-## VS Code Recommended Extensions
-
-- **Tailwind CSS IntelliSense**
-- **Prettier - Code formatter**
-- **ES7+ React/Redux/React-Native snippets**
-- **ESLint**
-
-## License
-
-MIT
