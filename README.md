@@ -2,6 +2,8 @@
 
 An AI-powered, offline-first learning workspace that combines personalized education, gamification, and real-time quiz competition.
 
+this is the deployed link - https://vidyasetu-sigma.vercel.app
+
 ## Features
 
 - **Quiz Arena**: Real-time 1v1 battles with matchmaking and AI fallback.
@@ -18,6 +20,8 @@ An AI-powered, offline-first learning workspace that combines personalized educa
 - **AI**: Google Gemini API.
 
 ## Getting Started
+
+
 
 ### Prerequisites
 
