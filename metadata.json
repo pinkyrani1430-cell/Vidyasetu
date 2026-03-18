@@ -1,0 +1,7 @@
+{
+  "name": "VIDYASETU",
+  "description": "An AI-powered, offline-first learning workspace that combines personalized education, gamification, and real-time quiz competition.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

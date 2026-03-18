@@ -1,0 +1,96 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user profile information, role, and progress.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique user ID" },
+        "name": { "type": "string", "description": "Display name" },
+        "email": { "type": "string", "description": "User email" },
+        "role": { "type": "string", "enum": ["student", "teacher"], "description": "User role" },
+        "language": { "type": "string", "description": "Preferred language" },
+        "coins": { "type": "number", "description": "User coin balance" },
+        "level": { "type": "number", "description": "User level" },
+        "xp": { "type": "number", "description": "User experience points" },
+        "streak": { "type": "number", "description": "Daily streak count" },
+        "lastActive": { "type": "string", "format": "date-time", "description": "Last activity timestamp" }
+      },
+      "required": ["uid", "name", "role"]
+    },
+    "QuizRoom": {
+      "title": "Quiz Room",
+      "description": "Stores real-time quiz battle room data.",
+      "type": "object",
+      "properties": {
+        "roomId": { "type": "string" },
+        "players": { "type": "array" },
+        "status": { "type": "string", "enum": ["waiting", "active", "finished"] }
+      }
+    },
+    "QuizResult": {
+      "title": "Quiz Result",
+      "description": "Stores the outcome of a quiz for a student.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "studentName": { "type": "string" },
+        "class": { "type": "string" },
+        "subject": { "type": "string" },
+        "mode": { "type": "string" },
+        "score": { "type": "number" },
+        "totalQuestions": { "type": "number" },
+        "coinsWon": { "type": "number" },
+        "rank": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "mistakes": { 
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question": { "type": "string" },
+              "yourAnswer": { "type": "string" },
+              "correctAnswer": { "type": "string" },
+              "topic": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": ["uid", "score", "timestamp"]
+    },
+    "Question": {
+      "title": "Question",
+      "description": "Stores teacher-uploaded questions.",
+      "type": "object",
+      "properties": {
+        "question": { "type": "string" },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "correctIndex": { "type": "number" },
+        "class": { "type": "string" },
+        "subject": { "type": "string" },
+        "difficulty": { "type": "string", "enum": ["Easy", "Medium", "Hard"] },
+        "topic": { "type": "string" },
+        "teacherId": { "type": "string" }
+      },
+      "required": ["question", "options", "correctIndex", "class", "subject"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile documents"
+    },
+    "/quizRooms/{roomId}": {
+      "schema": "QuizRoom",
+      "description": "Quiz battle rooms"
+    },
+    "/quizResults/{resultId}": {
+      "schema": "QuizResult",
+      "description": "Historical quiz results"
+    },
+    "/questions/{questionId}": {
+      "schema": "Question",
+      "description": "Teacher-managed questions"
+    }
+  }
+}

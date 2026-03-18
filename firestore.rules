@@ -1,0 +1,196 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// This security rules file assumes the following data structures:
+//
+// Collection: users
+// Document ID: {userId} (matches request.auth.uid)
+// Fields:
+//   - uid: string (required, immutable) - Unique user ID
+//   - name: string (required) - Display name
+//   - email: string (required) - User email (PII)
+//   - role: string (required, enum: ['student', 'teacher']) - User role
+//   - language: string (optional) - Preferred language
+//   - coins: number (optional) - User coin balance
+//   - level: number (optional) - User level
+//   - xp: number (optional) - User experience points
+//   - streak: number (optional) - Daily streak count
+//   - lastActive: string (optional, ISO 8601) - Last activity timestamp
+//
+// Collection: studySessions
+// Document ID: {sessionId}
+// Fields:
+//   - uid: string (required) - User ID
+//   - startTime: string (required, ISO 8601) - Session start time
+//   - endTime: string (required, ISO 8601) - Session end time
+//   - duration: number (required) - Duration in seconds
+//   - createdAt: timestamp (required) - Server timestamp
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    // Check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user owns the resource (for user-owned documents)
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Check if user is owner based on document's uid field
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.uid;
+    }
+    
+    // Verify UID hasn't been tampered with on create
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) ||
+        request.resource.data.uid == request.auth.uid;
+    }
+    
+    // Ensure uid field is not modified on update
+    function uidNotModified() {
+      return !('uid' in request.resource.data) ||
+        request.resource.data.uid == resource.data.uid;
+    }
+    
+    // Validate required fields exist
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+    
+    // Validate string length
+    function validStringLength(field, minLen, maxLen) {
+      return request.resource.data[field] is string &&
+        request.resource.data[field].size() >= minLen &&
+        request.resource.data[field].size() <= maxLen;
+    }
+    
+    // Validate email format
+    function isValidEmail(email) {
+      return email is string &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // Check if user is an admin (teacher role or specific email)
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.email == "pinkyrani1430@gmail.com" ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher'));
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasRequiredFields(['uid', 'name', 'role']) &&
+             data.uid is string &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.role in ['student', 'teacher'] &&
+             (!('email' in data) || isValidEmail(data.email));
+    }
+
+    function isValidQuizResult(data) {
+      return hasRequiredFields(['uid', 'score', 'totalQuestions', 'timestamp', 'mode', 'subject', 'class']) &&
+             data.uid is string &&
+             data.score is number && data.score >= 0 && data.score <= 10 &&
+             data.totalQuestions is number && data.totalQuestions == 10 &&
+             data.mode in ['1v1', 'individual'] &&
+             data.subject is string &&
+             data.class is string &&
+             data.timestamp is string;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    // User Profiles
+    match /users/{userId} {
+      // PII Protection: Only owner or admin can read
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Create: Must be owner, valid data, and cannot self-assign teacher role unless admin
+      allow create: if isOwner(userId) && 
+                      isValidUser(request.resource.data) && 
+                      (request.resource.data.role == 'student' || isAdmin());
+      
+      // Update: Must be owner or admin, valid data, and cannot change role unless admin
+      allow update: if (isOwner(userId) || isAdmin()) && 
+                      isValidUser(request.resource.data) && 
+                      uidNotModified() &&
+                      (request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    // Quiz Rooms
+    match /quizRooms/{roomId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+    }
+
+    // Quiz Results
+    match /quizResults/{resultId} {
+      // Allow authenticated users to read results for leaderboards
+      // In a more sensitive app, we might restrict this to specific fields
+      allow read: if isAuthenticated();
+      
+      // Students can only create their own results
+      allow create: if isAuthenticated() && 
+                      request.resource.data.uid == request.auth.uid &&
+                      isValidQuizResult(request.resource.data);
+    }
+
+    // Study Sessions
+    match /studySessions/{sessionId} {
+      // Only owner or admin can read their study history
+      allow read: if isDocOwner() || isAdmin();
+      
+      // Students can only create their own study sessions
+      allow create: if isAuthenticated() && 
+                      request.resource.data.uid == request.auth.uid &&
+                      hasRequiredFields(['uid', 'startTime', 'endTime', 'duration', 'createdAt']);
+    }
+
+    // Questions
+    match /questions/{questionId} {
+      // Everyone can read questions for quizzes
+      allow read: if isAuthenticated();
+      // Only teachers can create/update/delete questions
+      allow write: if isAdmin();
+    }
+    
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// ===============================================================
+// Devil's Advocate Attack Documentation
+// ===============================================================
+//
+// 1. Public List Exploit: FAILED. Default deny and read rules require auth.
+// 2. Unauthorized Read/Write: FAILED. Read/Update restricted to owner or admin.
+// 3. The "Update Bypass": FAILED. isValidUser() called in update.
+// 4. Ownership Hijacking: FAILED. isOwner(userId) and uidNotModified() prevent this.
+// 5. Immutable Field Modification: FAILED. uidNotModified() protects uid.
+// 6. Data Corruption: FAILED. Type checks in isValidUser().
+// 7. Resource Exhaustion: FAILED. Size checks on name.
+// 8. Privilege Escalation: FAILED. Role change restricted to admin.
+// 9. Mixed Content Leak: FAILED. Read access restricted to owner/admin.
+//
+// ===============================================================
